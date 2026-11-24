@@ -1,23 +1,15 @@
-// news-image-20261123 entry (Node 22, standard library only).
-// The picture is drawn at build time and ships beside this file as
-// entry.png; this program places an exact copy of it at /output/entry.png,
-// so both runs of the grader write the same bytes.
+// A working news-image-daily entry (Node 22, standard library only): its image is the entry.png beside this file, and
+// the program copies it to /output/entry.png. A starting point, not a winner: replace the image. The gate takes a
+// whole PNG or JPEG of at most 1 MiB and 1024 by 1024 pixels, and the judge sees exactly the bytes copied.
 //
-// Local run:
+// Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+// v2: front-page image of Monday 23 November 2026, drawn fresh with PIL.
+import { copyFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 
-const here = dirname(fileURLToPath(import.meta.url));
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
-const target = join(outDir, 'entry.png');
-
-mkdirSync(outDir, { recursive: true });
-const bytes = readFileSync(join(here, 'entry.png'));
-writeFileSync(target, bytes);
-// Self-check: the copy must be byte for byte the image we ship.
-if (statSync(target).size !== bytes.length) {
-  throw new Error('entry.png copy is incomplete');
-}
+const src = new URL('./entry.png', import.meta.url);
+if (statSync(src).size > 1048576) throw new Error('entry.png exceeds 1 MiB');
+copyFileSync(src, join(outDir, 'entry.png'));
